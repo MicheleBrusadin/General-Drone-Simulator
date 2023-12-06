@@ -1,23 +1,24 @@
 display:
-  width: 800
+  width: 600
   height: 600
   update_frequency: 60
 
 agent:
-  gamma: 0.99           # Discount factor
-  epsilon: 0.75         # Exploration rate
-  epsilon_decay: 0.99999  # Exploration rate decay
-  max_memory: 100000    # Maximum number of experiences to store
-  batch_size: 100       # Number of experiences to sample per training step
+  gamma: 0.95           # Discount factor
+  epsilon: 0.5         # Exploration rate
+  epsilon_decay: 0.00001  # Exploration step decay
+  max_memory: 100000000   # Maximum number of experiences to store
+  batch_size: 100      # Number of experiences to sample per training step
   learning_rate: 0.001  # Learning rate
-  layers: [64, 64]      # Number of neurons in the hidden layers
-  dropout_p: 0.1        # Dropout rate
+  layers: [512, 512, 512]    # Number of neurons in the hidden layers
+  dropout_p: 0.3       # Dropout rate
 
 drone:
+  n_drones: 4             # Number of drones to train in parallel
   thrust: 40            # Newtons
   mass: 0.1             # Kilograms
-  inertia: 2            # Kilogram meters squared
-  gravity: 2
+  inertia: 1            # Kilogram meters squared
+  gravity: 4
   motors:
     - [-0.5, 0, -90]    # X offset from drone center, Y offset from drone center, rotation relative to drone center
     - [0.5, 0, -90]

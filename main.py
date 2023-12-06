@@ -1,3 +1,6 @@
+import argparse
+import threading
+import time
 from src.display import Display
 from src.drone import Drone
 from src.human import Human
@@ -7,67 +10,170 @@ from src.utils import read_config
 
 def initialize():
     config = read_config("config.yaml")
+    monitor = Monitor(config)
+    monitor.update_plot()
     display = Display(
         config=config["display"],
         update_frequency=config["display"]["update_frequency"],
         title="Drone Simulation"
     )
-    drone = Drone(
-        config=config["drone"],
-        display=config["display"],
-        update_frequency=config["display"]["update_frequency"],
-        startx=config["display"]["width"] // 2,
-        starty=config["display"]["height"] // 2,
-    )
+    drones = []
+    for i in range(config["drone"]["n_drones"]):
+        drones.append(Drone(
+            config=config["drone"],
+            display=config["display"],
+            update_frequency=config["display"]["update_frequency"],
+            startx=config["display"]["width"] // 2,
+            starty=config["display"]["height"] // 2,
+        ))
+    # drone = Drone(
+    #     config=config["drone"],
+    #     display=config["display"],
+    #     update_frequency=config["display"]["update_frequency"],
+    #     startx=config["display"]["width"] // 2,
+    #     starty=config["display"]["height"] // 2,
+    # )
 
     human = Human(
         input_length=len(config["drone"]["motors"]),
     )
 
     agent = Agent(
-        drone=drone,
         config=config
     )
 
-    monitor = Monitor()
+    return display, monitor, drones, human, agent
 
-    return display, monitor, drone, human, agent
 
-def main():
-    display, monitor, drone, human, agent = initialize()
+# Thread management
+RUNNING = True
 
-    state, normalized_state = drone.get_state(), drone.get_normalized_state()
-    
+def run_drone_simulation(drone, agent, monitor, target):
+    global RUNNING
     total_reward = 0
-    target = {
-        "x": display.width // 2,
-        "y": display.height // 2,
-        "distance": 100
-    }
-    while True:
+    state, normalized_state = drone.get_state(), drone.get_normalized_state(target)
+
+    while RUNNING:
         previous_state = normalized_state
-        #action = human.get_action()
-        action = agent.get_action(state=drone.get_normalized_state())
+        action = agent.get_action(state=drone.get_normalized_state(target))
         
-        state, normalized_state, done = drone.update_state(inputs=action)
+        # Update drone state
+        done = drone.update_state(inputs=action)
+        state, normalized_state = drone.get_state(), drone.get_normalized_state(target)
         
-        if agent.n_games % 10 == 0:
-            display.update(drone, target)
+        # Train agent
         reward = agent.get_reward(state=state, target=target, done=done)
-        total_reward += reward
-        
         agent.train_short_memory(previous_state, action, reward, normalized_state, done)
         agent.remember(previous_state, action, reward, normalized_state, done)
+        total_reward += reward
         
+        # Handle death
         if done:
-            state, normalized_state = drone.reset_state()
+            monitor.log_data(total_reward, drone.survive_duration)
+            drone.reset_state()
+            state, normalized_state = drone.get_state(), drone.get_normalized_state(target)
             agent.n_games += 1
             agent.train_long_memory()
             print(f"Game {agent.n_games} done, epsilon: {round(agent.epsilon*100,1)}, total reward: {round(total_reward)}")
-            monitor.log_reward(total_reward)
-            monitor.update_plot()
             total_reward = 0
+
+def main(args: argparse.Namespace):
+    global RUNNING
+    display, monitor, drones, human, agent = initialize()  # adjust this function accordingly
+    target = {
+        "x": display.width // 2,
+        "y": display.height // 2,
+        "distance": 150
+    }
+    threads = []
+    for drone in drones:
+        t = threading.Thread(target=run_drone_simulation, args=(drone, agent, monitor, target))
+        threads.append(t)
+        t.start()
+
+    try:
+        while True:
+            break
+            #display.update(target, drones, agent)
+            monitor.update_plot()
+
+            time.sleep(0.5)
+    except KeyboardInterrupt:
+        print("Simulation interrupted. Exiting...")
+        RUNNING = False
+
+    # Wait for all threads to complete
+    for t in threads:
+        t.join()
+    print("All threads have been stopped. Exiting...")
+
+# def main(args: argparse.Namespace):
+#     display, monitor, drones, human, agent = initialize()
+
+#     # total_reward = 0
+#     target = {
+#         "x": display.width // 2,
+#         "y": display.height // 2,
+#         "distance": 150
+#     }
+    
+#     state, normalized_state = drone.get_state(), drone.get_normalized_state(target)
+    
+#     while True:
+#         previous_state = normalized_state
+
+#         # Get action
+#         if args.human:
+#             action = human.get_action()
+#         else: 
+#             action = agent.get_action(state=drone.get_normalized_state(target))
+        
+#         # Update drone state
+#         done = drone.update_state(inputs=action)
+#         state, normalized_state = drone.get_state(), drone.get_normalized_state(target)
+        
+#         # Display drone simulation
+#         if args.human or agent.n_games % 10 == 0:
+#             display.update(target, drone, agent, total_reward, action)
+            
+#         # Train agent
+#         reward = agent.get_reward(state=state, target=target, done=done)
+#         agent.train_short_memory(previous_state, action, reward, normalized_state, done)
+#         agent.remember(previous_state, action, reward, normalized_state, done)
+#         total_reward += reward
+        
+#         # Handle death
+#         if done:
+#             monitor.log_data(total_reward, drone.survive_duration)
+#             drone.reset_state()
+#             state, normalized_state = drone.get_state(), drone.get_normalized_state(target)
+#             agent.n_games += 1
+#             agent.train_long_memory()
+#             print(f"Game {agent.n_games} done, epsilon: {round(agent.epsilon*100,1)}, total reward: {round(total_reward)}")
+            
+#             monitor.update_plot()
+#             total_reward = 0
         
 
+import cProfile
+import pstats
 if __name__ == "__main__":
-    main()
+    # Parse --human to manually control the drone
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--human", help="Human contrl", action="store_true")
+    args = parser.parse_args()
+    profiler = cProfile.Profile()
+    profiler.enable()
+
+    try:
+        main(args)
+    except KeyboardInterrupt:
+        print("Simulation interrupted. Exiting...")
+    finally:
+        profiler.disable()
+
+        # Create Stats object
+        stats = pstats.Stats(profiler)
+
+        # Sort the statistics by cumulative time taken and print the top 20 lines
+        stats.sort_stats('cumulative').print_stats(20)

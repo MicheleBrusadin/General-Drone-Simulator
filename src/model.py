@@ -17,9 +17,7 @@ class Linear_QNet(nn.Module):
             self.layers.append(nn.Linear(layers[i], layers[i + 1]))
             # Add a dropout layer after each linear layer except the last one
             if i < len(layers) - 2:
-                self.layers.append(nn.Dropout(p=dropout_p))
-
-    
+                self.layers.append(nn.Dropout(p=dropout_p))    
 
     def forward(self, x):
         for layer in self.layers[:-1]:
@@ -38,19 +36,20 @@ class Linear_QNet(nn.Module):
 
 
 class QTrainer:
-    def __init__(self, model, lr, gamma):
+    def __init__(self, model, lr, gamma, device):
         self.lr = lr
         self.gamma = gamma
         self.model = model
+        self.device = device
         self.optimizer = optim.Adam(model.parameters(), lr=self.lr)
         self.criterion = nn.MSELoss()
 
     def train_step(self, state, action, reward, next_state, done):
-        state = np.array(state)
-        state = torch.tensor(state, dtype=torch.float)
-        next_state = torch.tensor(next_state, dtype=torch.float)
-        action = torch.tensor(action, dtype=torch.float)
-        reward = torch.tensor(reward, dtype=torch.float)
+        state = torch.tensor(np.array(state), dtype=torch.float).to(self.device)
+        next_state = torch.tensor(next_state, dtype=torch.float).to(self.device)
+        action = torch.tensor(np.array(action), dtype=torch.float).to(self.device)
+        reward = torch.tensor(reward, dtype=torch.float).to(self.device)
+        done = torch.tensor(done, dtype=torch.bool).to(self.device)  # Ensure 'done' is also on the same device
 
         if len(state.shape) == 1:
             state = torch.unsqueeze(state, 0)
