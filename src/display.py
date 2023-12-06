@@ -1,4 +1,5 @@
 import math
+import numpy as np
 import pygame
 
 pygame.init()
@@ -119,6 +120,72 @@ class Display:
     #     #self._draw_action(action)
     #     pygame.display.flip()
 
+
+    def draw_weights(self, surface, weights, x_start, y_start, neuron_radius, layer_spacing, neuron_spacing):
+        # Calculate the starting x position based on the total number of layers
+        num_layers = len(weights) // 2  # Each layer has a weight and a bias matrix
+
+        # Find the overall min and max weights for normalization across all layers
+        all_weights = np.concatenate([weights[f'layers.{2 * i}.weight'].flatten() for i in range(num_layers)])
+        min_weight = np.min(all_weights)
+        max_weight = np.max(all_weights)
+
+        x = x_start
+
+        # Draw neurons and weights layer by layer
+        for i in range(num_layers):
+            layer_weight_key = f'layers.{2 * i}.weight'
+            weight_matrix = weights[layer_weight_key]
+
+            # Draw neurons for current layer
+            y = y_start + (max(weight_matrix.shape) - weight_matrix.shape[0]) * neuron_spacing // 2
+            for neuron_index in range(weight_matrix.shape[0]):
+                pygame.draw.circle(surface, WHITE, (x, y + neuron_index * neuron_spacing), neuron_radius)
+
+            # If it's the last layer, break after drawing neurons
+            if i == num_layers - 1:
+                break
+
+            # Draw connections to the next layer
+            next_layer_weight_key = f'layers.{2 * (i + 1)}.weight'
+            next_weight_matrix = weights[next_layer_weight_key]
+            next_y = y_start + (max(next_weight_matrix.shape) - next_weight_matrix.shape[1]) * neuron_spacing // 2
+
+            for neuron_index in range(weight_matrix.shape[0]):
+                for next_neuron_index in range(weight_matrix.shape[1]):
+                    weight_value = weight_matrix[neuron_index][next_neuron_index]
+                    normalized_weight = (weight_value - min_weight) / (max_weight - min_weight)
+                    color_intensity = int(normalized_weight * 255)
+                    color = (color_intensity, color_intensity, color_intensity)  # Grayscale
+                    # Draw line for weight
+                    pygame.draw.line(surface, color, (x, y + neuron_index * neuron_spacing),
+                                    (x + layer_spacing, next_y + next_neuron_index * neuron_spacing), 1)
+
+            x += layer_spacing
+
+        # Draw output neurons
+        output_weights_key = f'layers.{2 * (num_layers - 1)}.weight'
+        output_weight_matrix = weights[output_weights_key]
+        y = y_start + (max(output_weight_matrix.shape) - output_weight_matrix.shape[1]) * neuron_spacing // 2
+        for neuron_index in range(output_weight_matrix.shape[1]):
+            pygame.draw.circle(surface, WHITE, (x, y + neuron_index * neuron_spacing), neuron_radius)
+
+
+
+    def _draw_model_weights(self, agent):
+        weights = agent.get_model_weights()
+        weights = {k: v.cpu().numpy() for k, v in weights.items()}  # Move weights to CPU and convert to numpy
+
+        # Define the starting position
+        x_start, y_start = 100, 100
+        # Define the size of neurons and spacing
+        neuron_radius = 20
+        layer_spacing = 150
+        neuron_spacing = 60
+
+        # Draw the weights on the Pygame surface
+        self.draw_weights(self.screen, weights, x_start, y_start, neuron_radius, layer_spacing, neuron_spacing)
+
     def update(self, target, drones, agent):
         self.clock.tick(60)
         self.screen.fill(BLACK)
@@ -128,4 +195,5 @@ class Display:
         self._draw_target(target)
         #self._draw_state(drone.get_normalized_state(target))
         self._draw_agent_state(agent)
+        #self._draw_model_weights(agent)
         pygame.display.flip()

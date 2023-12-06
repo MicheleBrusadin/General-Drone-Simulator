@@ -10,11 +10,11 @@ agent:
   max_memory: 100000000   # Maximum number of experiences to store
   batch_size: 100      # Number of experiences to sample per training step
   learning_rate: 0.001  # Learning rate
-  layers: [512, 512, 512]    # Number of neurons in the hidden layers
+  layers: [4, 1]    # Number of neurons in the hidden layers
   dropout_p: 0.3       # Dropout rate
 
 drone:
-  n_drones: 1             # Number of drones to train in parallel
+  n_drones: 4             # Number of drones to train in parallel
   thrust: 40            # Newtons
   mass: 0.1             # Kilograms
   inertia: 1            # Kilogram meters squared

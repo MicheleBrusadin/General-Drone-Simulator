@@ -41,6 +41,10 @@ class Agent:
         # Support safe mutlithreading
         self.memory_lock = Lock()
         self.model_lock = Lock()
+    
+    def get_model_weights(self):
+        with self.model_lock:
+            return self.trainer.model.state_dict()
 
     def train_long_memory(self):
         with self.memory_lock:
