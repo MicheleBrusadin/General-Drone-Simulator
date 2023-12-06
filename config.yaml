@@ -14,7 +14,7 @@ agent:
   dropout_p: 0.3       # Dropout rate
 
 drone:
-  n_drones: 4             # Number of drones to train in parallel
+  n_drones: 1             # Number of drones to train in parallel
   thrust: 40            # Newtons
   mass: 0.1             # Kilograms
   inertia: 1            # Kilogram meters squared
