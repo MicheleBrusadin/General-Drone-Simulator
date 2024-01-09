@@ -10,6 +10,9 @@ Further configuration is done in the respective python files discussed below.
 ### Manual control
 Run `poetry run python manual.py` to manually control the drone. This is nice for tuning parameters in `config.yaml` and for testing the drone.
 
+test
+test
+
 ### Training
 Training can be done through the Jupyter notebook `main.ipynb`. However, for some reason the graphs are broken so its hard to monitor training.
 You can also run `poetry run python main.py` to train the model. Make sure to inspect the file and change the parameters to your liking.

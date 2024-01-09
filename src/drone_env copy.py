@@ -14,13 +14,9 @@ import time
 class DroneEnv(Env):
     def __init__(self, config: dict, render_mode = None, max_episode_steps = 1000):
         self.motors = config["drone"]["motors"]
-        self.mass_max = config["drone"]["mass_max"]
-        self.mass_min = config["drone"]["mass_min"]
+        self.mass = config["drone"]["mass"]
         self.inertia = config["drone"]["inertia"]
         self.gravity = config["drone"]["gravity"]
-        
-        self.mass = random.uniform(self.mass_min,self.mass_max)
-        # self.mass = config["drone"]["mass"]
 
         self.update_frequency = config["display"]["update_frequency"]
         self.dt = 1 / self.update_frequency
@@ -63,8 +59,6 @@ class DroneEnv(Env):
 
     def get_state(self):
         return self.state
-    def get_mass(self):
-        return self.mass
     
     def seed(self, seed=None):
         # Set the seed
@@ -97,12 +91,11 @@ class DroneEnv(Env):
             random.uniform(-velocity_range, velocity_range),  # Velocity y
             random.uniform(-rotation_range, rotation_range),  # Rotation
             random.uniform(-angular_velocity_range, angular_velocity_range),  # Angular velocity
-            
         ]
-        # put initial status == still          
+
             
         # self.state = [
-        #     0.5,  # Position x
+        #     0,  # Position x
         #     0,  # Velocity x
         #     0,  # Position y
         #     0,  # Velocity y
@@ -271,8 +264,6 @@ class DroneEnv(Env):
         return done
     
     def _update_state_timestep(self):
-        #Update mass
-        self.mass = random.uniform(self.mass_min,self.mass_max)
         # Update state
         self.state[0] += self.state[1] * self.dt  # Update position x
         self.state[2] += self.state[3] * self.dt  # Update position y

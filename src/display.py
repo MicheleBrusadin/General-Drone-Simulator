@@ -33,6 +33,8 @@ class Display:
     def _draw_drone(self, drone):
         # Drone state
         state = drone.get_state()
+        
+        
         drone_x, _, drone_y, _, rotation, _ = state
 
         # drone_x and drone_y are (-1,1) so we need to scale them to the screen size
@@ -104,12 +106,29 @@ class Display:
         x_offset = 20  # Starting x position for the first line of text
         line_height = 25  # Height of each line of text
 
-        state_labels = ["X", "vX", "Y", "vY", "angle", "vAngle"]
+        state_labels = ["X", "vX", "Y", "vY", "angle", "vAngle", ]
 
         for label, value in zip(state_labels, state):
             text = font.render(f"{label}: {round(value, 2)}", True, WHITE)
             self.screen.blit(text, (x_offset, y_offset))
             y_offset += line_height
+
+            
+
+    
+    # def _draw_mass(self, mass):
+    #     font = pygame.font.SysFont(None, 24)
+    #     y_offset = 175  # Starting y position for the first line of text
+    #     x_offset = 20  # Starting x position for the first line of text
+    #     line_height = 25  # Height of each line of text
+    #     mass_labels = ["Mass"]
+    #     for label, value in zip(mass_labels, mass):
+    #         text = font.render(f"{label}: {round(value, 2)}", True, WHITE)
+    #         self.screen.blit(text, (x_offset, y_offset))
+    #         y_offset += line_height
+
+        
+
 
     def _draw_agent_state(self, agent):
         font = pygame.font.SysFont(None, 24)
@@ -158,6 +177,7 @@ class Display:
         self._draw_drone(drone)
         self._draw_target()
         self._draw_state(drone.get_state())
+        # self._draw_mass(drone.get_mass())
         # self._draw_agent_state(agent)
         pygame.display.flip()
 

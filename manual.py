@@ -36,4 +36,7 @@ while True:
         action = human.get_action()
         obs, reward, done, _, info = env.step(action) # Get new set of observations
         score+=reward
+        mass = env.get_mass()
     print('Score:{}'.format(round(score,2)))
+    print('Mass:{}'.format(round(mass,2)))
+    

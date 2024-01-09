@@ -1,4 +1,4 @@
-import datetime
+
 import os
 
 import numpy as np
@@ -9,9 +9,23 @@ from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.logger import configure
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.callbacks import BaseCallback, EvalCallback, StopTrainingOnRewardThreshold
+i =2
+
+import datetime
+if i ==1:
+    conf = "config_rand.yaml"
+    
+    learning_type = "rand"
+elif i ==2:
+    conf = "config_base.yaml"
+    
+    learning_type = "base"
 
 
-from src.drone_env import DroneEnv
+
+from src.drone_env_rand import DroneEnv
+
+
 from src.utils import read_config
 from src.monitor import Monitor
 from src.logger_callback import LoggerCallback
@@ -20,7 +34,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Using device: {}".format(device))
 
 # Read config and set up tensorboard logging
-config = read_config("config.yaml")
+config = read_config(conf)
 save_path = os.path.join('training', 'saved_models')
 log_path = os.path.join('training', 'logs')
 logger = configure(log_path, ["stdout", "tensorboard"])
@@ -53,7 +67,7 @@ if show_env:
 if train_model:
     # TRAIN THE MODEL
     num_envs = 16  # Number of parallel environments
-    reward_threshold = 800  # Stop training if the mean reward is greater or equal to this value
+    reward_threshold = 1000  # Stop training if the mean reward is greater or equal to this value
     max_episode_steps = 1000  # Max number of steps per episode
     total_timesteps = 10000000  # Total number of training steps (ie: environment steps)
     model_type = "PPO"
@@ -67,7 +81,7 @@ if train_model:
                                 callback_on_new_best=stop_callback, 
                                 eval_freq=1000, 
                                 best_model_save_path=save_path,
-                             
+                            
                                 verbose=1)
 
     # Monitor handles the plotting of reward and survive time during training
@@ -82,7 +96,7 @@ if train_model:
     model = None
     best_model_path = os.path.join('training', 'saved_models', 'best_model')
 
-   # Create or load the model based on import_last_best_model flag
+# Create or load the model based on import_last_best_model flag
     if import_last_best_model:
         print("Importing last best model!")
         if model_type == "PPO":
@@ -115,7 +129,7 @@ if train_model:
         print("Keyboard interrupt detected, exiting training loop")
     
     # SAVE THE MODEL TO DISK
-    savefilename = os.path.join(save_path, model_type + "_" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+    savefilename = os.path.join(save_path, model_type + "_" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")+ "_" + learning_type)
     model.save(savefilename)
     print("Model saved to {}".format(savefilename))
 

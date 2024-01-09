@@ -9,7 +9,7 @@ from stable_baselines3.common.logger import configure
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.callbacks import BaseCallback, EvalCallback, StopTrainingOnRewardThreshold
 
-from src.drone_env import DroneEnv
+from src.drone_env_rand import DroneEnv
 from src.utils import read_config
 from src.monitor import Monitor
 from src.logger_callback import LoggerCallback
@@ -19,8 +19,8 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Using device: {}".format(device))
 
 # Read config and set up tensorboard logging
-config = read_config("config.yaml")
-filename = "best_model"
+config = read_config("config_base_outsider.yaml")
+filename = "PPO_20240109-complete_rand"
 
 env = DroneEnv(config, render_mode="human", max_episode_steps=1000)
 try:
@@ -35,7 +35,10 @@ try:
             action, _ = model.predict(obs)
             obs, reward, done, _, info = env.step(action) # Get new set of observations
             score+=reward
+            mass = env.get_mass()
         print(f'Score: {round(score,2)}')
+        print('Mass:{}'.format(round(mass,2)))
+
 except KeyboardInterrupt:
     print("Shutting down...")
 finally:
