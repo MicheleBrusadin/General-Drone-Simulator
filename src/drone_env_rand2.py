@@ -75,8 +75,7 @@ class DroneEnv(Env):
     def reset(self, seed=None):
         # Reset the survive duration
         self.episode_step = 0
-        # randomize the mass
-        self.mass = random.uniform(self.mass_min,self.mass_max)
+
         # Define ranges for randomization
         position_range = 0.7
         exclusion_zone = 0.4  # range around zero to exclude
@@ -273,7 +272,7 @@ class DroneEnv(Env):
     
     def _update_state_timestep(self):
         #Update mass
-        
+        self.mass = random.uniform(self.mass_min,self.mass_max)
         # Update state
         self.state[0] += self.state[1] * self.dt  # Update position x
         self.state[2] += self.state[3] * self.dt  # Update position y
@@ -281,7 +280,6 @@ class DroneEnv(Env):
         
         # Ensure the rotation stays within -pi to pi
         self.state[4] = math.atan2(math.sin(self.state[4]), math.cos(self.state[4]))
-        
 
     def close(self):
         # Call super class

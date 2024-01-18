@@ -80,9 +80,9 @@ class DroneEnv(Env):
         position_range = 0.7
         exclusion_zone = 0.4  # range around zero to exclude
 
-        velocity_range = 0.4
-        rotation_range = 2
-        angular_velocity_range = 1
+        velocity_range = 0
+        rotation_range = 0
+        angular_velocity_range = 0
 
         def random_position(range_val, exclusion):
             # Choose a random sign (positive or negative)

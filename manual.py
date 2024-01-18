@@ -9,7 +9,7 @@ from stable_baselines3.common.logger import configure
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.callbacks import BaseCallback, EvalCallback, StopTrainingOnRewardThreshold
 
-from src.drone_env import DroneEnv
+from src.drone_env_rand import DroneEnv
 from src.utils import read_config
 from src.monitor import Monitor
 from src.logger_callback import LoggerCallback
@@ -19,7 +19,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Using device: {}".format(device))
 
 # Read config and set up tensorboard logging
-config = read_config("config.yaml")
+config = read_config("config_rand.yaml")
 save_path = os.path.join('training', 'saved_models')
 log_path = os.path.join('training', 'logs')
 logger = configure(log_path, ["stdout", "tensorboard"])

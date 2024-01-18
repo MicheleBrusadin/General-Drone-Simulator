@@ -9,12 +9,12 @@ target:
   distance: 0.3
 
 drone:
-  mass_max: 6
+  mass_max: 1
   mass_min: 0.2             # Kilograms
   inertia: 1            # Kilogram meters squared
   gravity: 1
   motors:
-    - [-0.5, 0, 0, 300]
-    - [0, 0, 0, 300]
-    - [0.5, 0, 0, 300]    # X offset from drone center, Y offset from drone center, rotation relative to drone center, thrust
+    - [-0.5, 0, 0, 50]
+    - [0, 0, 0, 50]
+    - [0.5, 0, 0, 50]    # X offset from drone center, Y offset from drone center, rotation relative to drone center, thrust
     

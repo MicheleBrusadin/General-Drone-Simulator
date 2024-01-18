@@ -9,7 +9,7 @@ from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.logger import configure
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.callbacks import BaseCallback, EvalCallback, StopTrainingOnRewardThreshold
-i =2
+i =5
 
 import datetime
 if i ==1:
@@ -20,6 +20,18 @@ elif i ==2:
     conf = "config_base.yaml"
     
     learning_type = "base"
+elif i ==3:
+    conf = "config_fixed_min.yaml"
+    
+    learning_type = "fixed_min"
+elif i ==4:
+    conf = "config_rand3.yaml"
+    
+    learning_type = "rand3"
+elif i ==5:
+    conf = "config_fixed_min3.yaml"
+    
+    learning_type = "fixed_min3"
 
 
 
@@ -69,7 +81,7 @@ if train_model:
     num_envs = 16  # Number of parallel environments
     reward_threshold = 1000  # Stop training if the mean reward is greater or equal to this value
     max_episode_steps = 1000  # Max number of steps per episode
-    total_timesteps = 10000000  # Total number of training steps (ie: environment steps)
+    total_timesteps = 2000000  # Total number of training steps (ie: environment steps)
     model_type = "PPO"
 
     env_fns = [lambda: DroneEnv(config, max_episode_steps=1000) for _ in range(num_envs)]

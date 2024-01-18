@@ -9,8 +9,8 @@ target:
   distance: 0.3
 
 drone:
-  mass_max: 0.2
-  mass_min: 0.2             # Kilograms
+  mass_max: 0.8
+  mass_min: 0.8          # Kilograms
   inertia: 1            # Kilogram meters squared
   gravity: 1
   motors:
